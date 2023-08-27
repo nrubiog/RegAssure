@@ -1,0 +1,88 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# RegAssure
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The RegAssure package is designed to simplify and enhance the process of validating regression model assumptions in R. It provides a comprehensive set of tools for evaluating key assumptions such as linearity, homoscedasticity, independence, normality, and collinearity, contributing to the reliability of analytical results.
+
+## Installation
+
+You can easily install RegAssure from GitHub using the devtools package:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("nrubiog/RegAssure")
+```
+
+## Example: Linear Regression
+
+Here's a basic example showcasing how RegAssure can be used to enhance linear regression analysis:
+
+```{r example}
+# Install the package
+# devtools::install_github("nrubiog/RegAssure")
+
+# Load the package
+library(RegAssure)
+
+# Create a regression model
+lm_model <- lm(mpg ~ wt + hp, data = mtcars)
+
+# Check assumptions
+check_lm_assumptions(lm_model)
+```
+
+## Example: Logistic Regression
+
+Here's an additional example demonstrating the use of RegAssure with logistic regression:
+
+```{r}
+# Load the package
+library(RegAssure)
+library(titanic)
+
+# Load the dataframe
+titanic <- titanic_train
+
+# Create a binary logistic regression model
+logit_model <- glm(Survived ~ PassengerId, data = titanic, family = "binomial")
+
+# Check assumptions for binary logistic regression
+check_logit(logit_model, data = titanic, tipo_modelo = "binario", vars_numericas = "PassengerId", y = "Survived")
+```
+
+## Example: storing data
+
+Here's an example of how to use the get_predict() function to compare real and predicted values from a model:
+
+```{r}
+# Load the package
+library(RegAssure)
+
+# Create a regression model
+lm_model <- lm(mpg ~ wt + hp, data = mtcars)
+
+# Get predictions and compare with real values
+predictions <- get_predict(lm_model, mtcars, mtcars$mpg, n = 3)
+
+# Print the results
+print(predictions)
+```
+
+
+By incorporating RegAssure into your workflow, you can streamline the process of assessing and addressing regression model assumptions, leading to more informed decision-making.

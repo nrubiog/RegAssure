@@ -4,9 +4,9 @@
 \name{RegAssure-package}
 \alias{RegAssure}
 \alias{RegAssure-package}
-\title{RegAssure: Streamlined Integration of Regression Assumption Checking Methods}
+\title{RegAssure: Streamlined Integration of Regression Assumption}
 \description{
-The RegAssure package streamlines the evaluation of regression model assumptions, enhancing result reliability. With integrated tools for assessing key aspects like linearity, homoscedasticity, and more, it's a valuable asset for researchers and analysts working with regression models.
+It streamlines the evaluation of regression model assumptions, enhancing result reliability. With integrated tools for assessing key aspects like linearity, homoscedasticity, and more, it's a valuable asset for researchers and analysts working with regression models.
 }
 \author{
 \strong{Maintainer}: Nicolás Rubio García \email{nrubiogar@gmail.com} (\href{https://orcid.org/0000-0003-3502-0784}{ORCID})

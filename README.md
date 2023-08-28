@@ -78,39 +78,39 @@ library(titanic)
 titanic <- titanic_train
 
 # Create a binary logistic regression model
-logit_model <- glm(Survived ~ PassengerId, data = titanic, family = "binomial")
+logit_model <- glm(Survived ~ Sex + Pclass, data = titanic, family = "binomial")
 
 # Check assumptions for binary logistic regression
-check_logit(logit_model, data = titanic, tipo_modelo = "binario", vars_numericas = "PassengerId", y = "Survived")
+check_logit(logit_model, data = titanic, tipo_modelo = "binario", vars_numericas = "Pclass", y = "Survived")
 #> Tests performed for binary/binomial model.
 #> 
 #> Linearity: Box Tidwell test:
-#>  MLE of lambda Score Statistic (t)     Pr(>|t|)
-#>              1            3.359283 0.0008147289
+#>  MLE of lambda Score Statistic (t) Pr(>|t|)
+#>       1.435966           -1.222135 0.221981
 #> 
 #> Classification Accuracy (ROC Curve):
 #> Setting levels: control = 0, case = 1
 #> Setting direction: controls < cases
-#> Area under the curve: 0.5064
+#> Area under the curve: 0.8453
 #> 
 #> Classification Accuracy (Confusion Matrix):
 #>         Predicciones
-#> Variable   0
-#>        0 549
-#>        1 342
-#> Multicollinearity:
+#> Variable   0   1
+#>        0 468  81
+#>        1 109 233
+#> Multicollinearity: VIF:
+#>      Sex   Pclass 
+#> 1.085996 1.085996
 #> 
-#> VIF test cannot be applied since the model contains fewer than 2 independent variables.
-#> 
-#> Call:  glm(formula = Survived ~ PassengerId, family = "binomial", data = titanic)
+#> Call:  glm(formula = Survived ~ Sex + Pclass, family = "binomial", data = titanic)
 #> 
 #> Coefficients:
-#> (Intercept)  PassengerId  
-#>  -4.554e-01   -4.003e-05  
+#> (Intercept)      Sexmale       Pclass  
+#>      3.2946      -2.6434      -0.9606  
 #> 
-#> Degrees of Freedom: 890 Total (i.e. Null);  889 Residual
+#> Degrees of Freedom: 890 Total (i.e. Null);  888 Residual
 #> Null Deviance:       1187 
-#> Residual Deviance: 1187  AIC: 1191
+#> Residual Deviance: 827.2     AIC: 833.2
 ```
 
 ## Example: storing data
@@ -129,7 +129,7 @@ lm_model <- lm(mpg ~ wt + hp, data = mtcars)
 predictions <- get_predict(lm_model, mtcars, mtcars$mpg, n = 3)
 
 # Print the results
-print(predictions)
+print(predictions)[1:7,]
 #>                     reales predichos  Error
 #> Mazda RX4             21.0    23.572 -2.572
 #> Mazda RX4 Wag         21.0    22.583 -1.583
@@ -163,6 +163,14 @@ print(predictions)
 #> Ferrari Dino          19.7    20.925 -1.225
 #> Maserati Bora         15.0    12.739  2.261
 #> Volvo 142E            21.4    22.984 -1.584
+#>                   reales predichos  Error
+#> Mazda RX4           21.0    23.572 -2.572
+#> Mazda RX4 Wag       21.0    22.583 -1.583
+#> Datsun 710          22.8    25.276 -2.476
+#> Hornet 4 Drive      21.4    21.265  0.135
+#> Hornet Sportabout   18.7    18.327  0.373
+#> Valiant             18.1    20.474 -2.374
+#> Duster 360          14.3    15.599 -1.299
 ```
 
 By incorporating RegAssure into your workflow, you can streamline the

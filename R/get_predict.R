@@ -10,6 +10,7 @@
 #'
 #' @return A data frame containing actual, predicted, and error values.
 #' @export
+
 get_predict <- function(modelo, datos, real, n = NULL) {
 
   predicciones <- predict(modelo, datos)

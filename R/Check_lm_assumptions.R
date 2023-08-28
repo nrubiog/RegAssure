@@ -16,6 +16,7 @@
 #'
 #' @export
 
+
 check_lm_assumptions <- function(model, m = NULL){
 
   m = m # m = Número de decimales para redondear

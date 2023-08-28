@@ -60,10 +60,10 @@ library(titanic)
 titanic <- titanic_train
 
 # Create a binary logistic regression model
-logit_model <- glm(Survived ~ PassengerId, data = titanic, family = "binomial")
+logit_model <- glm(Survived ~ Sex + Pclass, data = titanic, family = "binomial")
 
 # Check assumptions for binary logistic regression
-check_logit(logit_model, data = titanic, tipo_modelo = "binario", vars_numericas = "PassengerId", y = "Survived")
+check_logit(logit_model, data = titanic, tipo_modelo = "binario", vars_numericas = "Pclass", y = "Survived")
 ```
 
 ## Example: storing data
@@ -81,7 +81,7 @@ lm_model <- lm(mpg ~ wt + hp, data = mtcars)
 predictions <- get_predict(lm_model, mtcars, mtcars$mpg, n = 3)
 
 # Print the results
-print(predictions)
+print(predictions)[1:7,]
 ```
 
 

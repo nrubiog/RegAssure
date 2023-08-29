@@ -13,6 +13,7 @@
 #' @importFrom stats coef
 #' @importFrom stats ks.test
 #' @importFrom stats model.matrix
+#' @importFrom stats na.omit
 #' @importFrom stats predict
 #' @importFrom stats sd
 #' @importFrom stats shapiro.test

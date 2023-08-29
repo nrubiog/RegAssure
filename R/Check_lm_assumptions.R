@@ -33,7 +33,7 @@ check_lm_assumptions <- function(model, m = NULL){
   # Homoscedasticity
   bptest_result <- bptest(model)
   if (!is.null(m)) {
-    cat("Homoscedasticity:\n p-value: ", round(bptest_result$p.value, m), "\n")
+    cat("Homoscedasticity: Breusch-Pagan Test:\n p-value: ", round(bptest_result$p.value, m), "\n")
   } else{
     cat("Homoscedasticity:\n p-value: ", bptest_result$p.value, "\n")
   }
@@ -100,9 +100,9 @@ check_lm_assumptions <- function(model, m = NULL){
 
   vif_result <- car::vif(model)
   if (!is.null(m)) {
-    cat("Multicollinearity:\n VIF: ", round(vif_result, m), "\n")
+    cat("Multicollinearity: Variance Inflation Factor:\n: ", round(vif_result, m), "\n")
   } else {
-    cat("Multicollinearity:\n VIF: ", vif_result, "\n")
+    cat("Multicollinearity: Variance Inflation Factor:\n: ", vif_result, "\n")
   }
   cat("\n")
 

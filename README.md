@@ -4,6 +4,8 @@
 # RegAssure
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/nrubiog/RegAssure/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/nrubiog/RegAssure/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The RegAssure package is designed to simplify and enhance the process of
@@ -71,6 +73,7 @@ logistic regression:
 
 ``` r
 # Load the package
+
 library(RegAssure)
 library(titanic)
 
@@ -78,7 +81,7 @@ library(titanic)
 titanic <- titanic_train
 
 # Create a binary logistic regression model
-logit_model <- glm(Survived ~ Sex + Pclass, data = titanic, family = "binomial")
+logit_model <- glm(Survived ~ Pclass + Sex, data = titanic, family = "binomial")
 
 # Check assumptions for binary logistic regression
 check_logit(logit_model, data = titanic, tipo_modelo = "binario", vars_numericas = "Pclass", y = "Survived")
@@ -99,14 +102,14 @@ check_logit(logit_model, data = titanic, tipo_modelo = "binario", vars_numericas
 #>        0 468  81
 #>        1 109 233
 #> Multicollinearity: VIF:
-#>      Sex   Pclass 
+#>   Pclass      Sex 
 #> 1.085996 1.085996
 #> 
-#> Call:  glm(formula = Survived ~ Sex + Pclass, family = "binomial", data = titanic)
+#> Call:  glm(formula = Survived ~ Pclass + Sex, family = "binomial", data = titanic)
 #> 
 #> Coefficients:
-#> (Intercept)      Sexmale       Pclass  
-#>      3.2946      -2.6434      -0.9606  
+#> (Intercept)       Pclass      Sexmale  
+#>      3.2946      -0.9606      -2.6434  
 #> 
 #> Degrees of Freedom: 890 Total (i.e. Null);  888 Residual
 #> Null Deviance:       1187 
@@ -129,40 +132,7 @@ lm_model <- lm(mpg ~ wt + hp, data = mtcars)
 predictions <- get_predict(lm_model, mtcars, mtcars$mpg, n = 3)
 
 # Print the results
-print(predictions)[1:7,]
-#>                     reales predichos  Error
-#> Mazda RX4             21.0    23.572 -2.572
-#> Mazda RX4 Wag         21.0    22.583 -1.583
-#> Datsun 710            22.8    25.276 -2.476
-#> Hornet 4 Drive        21.4    21.265  0.135
-#> Hornet Sportabout     18.7    18.327  0.373
-#> Valiant               18.1    20.474 -2.374
-#> Duster 360            14.3    15.599 -1.299
-#> Merc 240D             24.4    22.887  1.513
-#> Merc 230              22.8    21.994  0.806
-#> Merc 280              19.2    19.979 -0.779
-#> Merc 280C             17.8    19.979 -2.179
-#> Merc 450SE            16.4    15.725  0.675
-#> Merc 450SL            17.3    17.044  0.256
-#> Merc 450SLC           15.2    16.850 -1.650
-#> Cadillac Fleetwood    10.4    10.355  0.045
-#> Lincoln Continental   10.4     9.363  1.037
-#> Chrysler Imperial     14.7     9.192  5.508
-#> Fiat 128              32.4    26.599  5.801
-#> Honda Civic           30.4    29.312  1.088
-#> Toyota Corolla        33.9    28.046  5.854
-#> Toyota Corona         21.5    24.586 -3.086
-#> Dodge Challenger      15.5    18.811 -3.311
-#> AMC Javelin           15.2    19.141 -3.941
-#> Camaro Z28            13.3    14.552 -1.252
-#> Pontiac Firebird      19.2    16.757  2.443
-#> Fiat X1-9             27.3    27.627 -0.327
-#> Porsche 914-2         26.0    26.037 -0.037
-#> Lotus Europa          30.4    27.770  2.630
-#> Ford Pantera L        15.8    16.546 -0.746
-#> Ferrari Dino          19.7    20.925 -1.225
-#> Maserati Bora         15.0    12.739  2.261
-#> Volvo 142E            21.4    22.984 -1.584
+print(predictions[1:7,])
 #>                   reales predichos  Error
 #> Mazda RX4           21.0    23.572 -2.572
 #> Mazda RX4 Wag       21.0    22.583 -1.583

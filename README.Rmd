@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # RegAssure
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/nrubiog/RegAssure/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/nrubiog/RegAssure/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The RegAssure package is designed to simplify and enhance the process of validating regression model assumptions in R. It provides a comprehensive set of tools for evaluating key assumptions such as linearity, homoscedasticity, independence, normality, and collinearity, contributing to the reliability of analytical results.
@@ -53,6 +54,7 @@ Here's an additional example demonstrating the use of RegAssure with logistic re
 
 ```{r}
 # Load the package
+
 library(RegAssure)
 library(titanic)
 
@@ -60,7 +62,7 @@ library(titanic)
 titanic <- titanic_train
 
 # Create a binary logistic regression model
-logit_model <- glm(Survived ~ Sex + Pclass, data = titanic, family = "binomial")
+logit_model <- glm(Survived ~ Pclass + Sex, data = titanic, family = "binomial")
 
 # Check assumptions for binary logistic regression
 check_logit(logit_model, data = titanic, tipo_modelo = "binario", vars_numericas = "Pclass", y = "Survived")
@@ -81,7 +83,7 @@ lm_model <- lm(mpg ~ wt + hp, data = mtcars)
 predictions <- get_predict(lm_model, mtcars, mtcars$mpg, n = 3)
 
 # Print the results
-print(predictions)[1:7,]
+print(predictions[1:7,])
 ```
 
 

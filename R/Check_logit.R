@@ -4,7 +4,7 @@
 #' This function performs assumption checks for logistic regression models, including binary, multinomial, and ordered models. It conducts various tests to assess the validity of the model assumptions.
 #'
 #' @param logit_model Fitted logistic regression model.
-#' @param data Dataframe containing predictor variables.
+#' @param data dataframe containing predictor variables.
 #' @param tipo_modelo Type of logistic regression model: ("binario", "multinomial", "ordenado", "binary", "multinomial", "ordered", "ordinal")
 #' @param vars_numericas Numeric variables to be used in Box-Tidwell test. Default is NULL.
 #' @param y Response variable for ROC test. Default is NULL.
@@ -15,48 +15,61 @@
 #' @return  A list containing the results of assumption checks.
 #' @export
 
-
 check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y = NULL, auc = NULL, ci = NULL, ret = NULL) {
 
-  # Convertir vars_numericas en un vector de nombres de variables
+  # Verificar si el dataframe tiene valores faltantes
+  df_name <- deparse(substitute(logit_model$data))
+  model_length <- length(logit_model$model[, 1])
+  data_length <- length(logit_model$data[, 1])
 
-  if(is.null(vars_numericas)){
-      cat("Linearity:\nBox Tidwell test cannot be applied since numeric variables have not been specified.")
-      cat("\n\n")
+  if (model_length < data_length) {
+    new_data <- na.omit(logit_model$data)
+    cat(df_name, "has missing values.\nA new dataframe will be created without affecting", df_name, ".\n\n")
+  } else {
+    cat(df_name, "has no missing values.\n")
+    new_data <- logit_model$data
   }
 
+  # Convertir vars_numericas en un vector de nombres de variables
   if (!is.null(vars_numericas)) {
-    if (is.character(vars_numericas)) {
-      vars_numericas <- c(vars_numericas)
-    } else if (is.list(vars_numericas)) {
-      vars_numericas <- unlist(vars_numericas)
-    }
+    vars_numericas <- unlist(vars_numericas)
   }
 
   # Prueba de linealidad (test de Box-Tidwell) para variables numericas continuas
 
   resultado_box_tidwell <- NULL
 
-  tryCatch(
-    {
-      if (!tipo_modelo %in% c("ordenada", "ordenado", "ordered", "ordinal")) {
-        if (!is.null(vars_numericas) && length(vars_numericas) > 0) {
-          # Crear una formula para la prueba de linealidad
-          formula_linealidad <- logit_model$linear.predictors
+  box_tidwell <- function() {
 
-          # Realizar la prueba de linealidad
-          resultado_box_tidwell <- suppressWarnings(boxTidwell(formula_linealidad, data[, vars_numericas]))
+  if (!tipo_modelo %in% c("ordenada", "ordenado", "ordered", "ordinal") &&
+      !is.null(vars_numericas) && length(vars_numericas) > 0) {
+
+    numeric_vars <- new_data[, vars_numericas]
+
+    if (all(!is.na(numeric_vars)) && all(numeric_vars > 0)) {
+      tryCatch({
+        # Crear una formula para la prueba de linealidad
+        formula_linealidad <- logit_model$linear.predictors
+
+        # Realizar la prueba de linealidad (ajusta según la función que estés usando)
+        resultado_box_tidwell <- suppressWarnings(boxTidwell(formula_linealidad, numeric_vars))
+      }, error = function(e) {
+        if (grepl("the variables to be transformed must have only positive values", e$message)) {
+          cat("Linearity: Box Tidwell test cannot be applied.\n")
+          cat("Reason:", e$message, "\n\n")
+        } else {
+          resultado_box_tidwell <- NULL
         }
-      } else {
-        resultado_box_tidwell <- NULL
-      }
-    },
-    error = function(e) {
-      cat("Linearity: Box Tidwell test cannot be applied.\n")
-      cat("Reason:",e$message, "\n")
-      cat("\n")
+      })
+    } else {
+      cat("Linearity: Box Tidwell test cannot be applied due to non-positive values or missing values in numeric variables.\n\n")
     }
-  )
+  } else {
+    cat("Linearity: Box Tidwell test cannot be applied since numeric variables have not been specified.\n\n")
+  }
+
+  return(resultado_box_tidwell)
+    }
 
   # Prueba de multicolinealidad
 
@@ -72,13 +85,13 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
 
     vars_names <- colnames(independent_vars)
 
-    vars_names2 <- vars_names[vars_names %in% colnames(data)]
+    vars_names2 <- vars_names[vars_names %in% colnames(new_data)]
 
     numeric_var <- length(vars_names2)
 
     if (numeric_var >= 2) {
 
-      is_num <- sapply(data[, vars_names2], is.numeric)
+      is_num <- sapply(new_data[, vars_names2], is.numeric)
 
       numeric_indices <- which(is_num)
 
@@ -113,7 +126,7 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
 
       # Intentar calcular con smooth = TRUE
       tryCatch({
-        curva_roc <- suppressMessages(roc(data[[y]], pred_logit, smooth = TRUE, auc = TRUE, ci = TRUE, ret = TRUE))
+        curva_roc <- suppressMessages(roc(new_data[[y]], pred_logit, smooth = TRUE, auc = TRUE, ci = TRUE, ret = TRUE))
       }, error = function(err1) {
         if (grepl("ROC curve not smoothable", err1$message)) {
           cat("Warning: The curve cannot be smoothed with smooth = TRUE.\n")
@@ -121,7 +134,7 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
         } else {
           cat("\nFailed to calculate ROC curve with smooth = TRUE. Changing smooth to FALSE.\n")
           # Intentar calcular con smooth = FALSE
-          curva_roc <- try(suppressMessages(roc(data[[y]], pred_logit,
+          curva_roc <- try(suppressMessages(roc(new_data[[y]], pred_logit,
                                                 smooth = FALSE, auc = TRUE, ci = TRUE, ret = TRUE)), silent = TRUE)
         }
         return(curva_roc)
@@ -131,28 +144,21 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
 
   # Matriz de confusion para los modelos logit binarios
 
-      matriz_confusion <- function() {
+  if (tipo_modelo %in% c("binario","binaria","binomial")) {
 
-        design_matrix <- model.matrix(logit_model)
-        independent_vars <- design_matrix[, -1]
-        vars_names <- colnames(independent_vars)
-        vars_names2 <- vars_names[vars_names %in% colnames(data)]
-        equal_row <- sapply(data[, vars_names2], length)
-
-        matriz_confusion_logit <- NULL
-
-          if (tipo_modelo %in% c("binario", "binaria" ,"binomial") && all(equal_row == equal_row[1])) {
-            pred_logit <- predict(logit_model, type = "response")
-            predicciones <- ifelse(pred_logit > 0.5, 1, 0)
-            matriz_confusion_logit <- table(data[[y]], predicciones, dnn = c("Variable", "Predicciones"))
-            return(matriz_confusion_logit)
-
-          } else {
-            return(matriz_confusion_logit)
-          }
+    matriz_confusion <- function() {
+      if (tipo_modelo %in% c("binario", "binaria" ,"binomial")) {
+        pred_logit <- predict(logit_model, type = "response")
+        predicciones <- ifelse(pred_logit > 0.5, 1, 0)
+        matriz_confusion_logit <- table(new_data[[y]], predicciones, dnn = c("Variable", "Predicciones"))
+        return(matriz_confusion_logit)
+      } else {
+        return(NULL)
       }
+    }
+  }
 
-  # Realizar las pruebas correspondientes segun el tipo de modelo
+    # Realizar las pruebas correspondientes segun el tipo de modelo
 
   if (tipo_modelo %in% c("binario", "binaria", "binomial")) {
     message("Tests performed for binary/binomial model.")
@@ -167,10 +173,10 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
 
     # Multicollinearity
     if (is.null(vif_result)) {
-      cat("Multicollinearity:\n\nVIF test cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
+      cat("Multicollinearity:\n\nVariance Inflation Factor cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
       cat("\n")
     } else {
-      cat("Multicollinearity: VIF:\n")
+      cat("Multicollinearity: Variance Inflation Factor:\n")
       print(vif_result)
       cat("\n")
     }
@@ -179,10 +185,7 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
 
     cat("Classification Accuracy (Confusion Matrix):\n")
     confusion_matrix <- matriz_confusion()
-    if(!is.null(confusion_matrix)){
-    print(confusion_matrix) } else {
-    cat("All variables must have the same number of observations:\n")
-    }
+    print(confusion_matrix)
     cat("\n")
 
     # Accuracy using ROC Curve
@@ -207,10 +210,10 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
 
     # Multicollinearity
     if (is.null(vif_result)) {
-      cat("Multicollinearity:\n\nVIF test cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
+      cat("Multicollinearity:\n\nVariance Inflation Factor cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
       cat("\n")
     } else {
-      cat("Multicollinearity: VIF:\n")
+      cat("Multicollinearity: Variance Inflation Factor:\n")
       print(vif_result)
       cat("\n")
     }
@@ -228,10 +231,10 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
 
     # Multicollinearity
     if (is.null(vif_result)) {
-      cat("Multicollinearity:\n\nVIF test cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
+      cat("Multicollinearity:\n\nVariance Inflation Factor cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
       cat("\n")
     } else {
-      cat("Multicollinearity: VIF:\n")
+      cat("Multicollinearity: Variance Inflation Factor:\n")
       print(vif_result)
       cat("\n")
     }

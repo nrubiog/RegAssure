@@ -18,7 +18,7 @@
 check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y = NULL, auc = NULL, ci = NULL, ret = NULL) {
 
   # Verificar si el dataframe tiene valores faltantes
-  df_name <- deparse(substitute(logit_model$data))
+  df_name <- deparse(substitute(logit_model))
   model_length <- length(logit_model$model[, 1])
   data_length <- length(logit_model$data[, 1])
 
@@ -160,6 +160,9 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
 
     # Realizar las pruebas correspondientes segun el tipo de modelo
 
+  # Lista para almacenar los resultados
+  resultados_list <- list()
+
   if (tipo_modelo %in% c("binario", "binaria", "binomial")) {
     message("Tests performed for binary/binomial model.")
     cat("\n")
@@ -173,7 +176,7 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
 
     # Multicollinearity
     if (is.null(vif_result)) {
-      cat("Multicollinearity:\n\nVariance Inflation Factor cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
+      cat("Multicollinearity:\nVariance Inflation Factor cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
       cat("\n")
     } else {
       cat("Multicollinearity: Variance Inflation Factor:\n")
@@ -196,6 +199,22 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
     }
     cat("\n")
 
+    # Almacena los resultados:
+
+    resultados_list$model_type <- "binary/binomial"
+    resultados_list$linearity_box_tidwell <- if(!is.null(resultado_box_tidwell)){resultado_box_tidwell$result} else{"Box-Tidwell Test cannot be done."}
+    resultados_list$multicollinearity_vif <- if(!is.null(vif_result)){vif_result} else{"Variance Inflation Factor Test cannot be done."}
+    resultados_list$confusion_matrix <- if(!is.null(confusion_matrix)){confusion_matrix} else{"Confusion Matrix cannot be done."}
+    resultados_list$roc_curve <- if(!is.null(prueba_roc)){prueba_roc()} else{"ROC curve cannot be done."}
+
+    # Mensaje en inglés
+    cat("The assumption tests have been completed and the results are available in a list.\n")
+    cat("Enjoy it\n")
+
+    # Mensaje en español
+    cat("Las pruebas de supuestos han sido completadas y los resultados estan disponibles en una lista.\n")
+    cat("Disfrutalo\n\n")
+
   } else if (tipo_modelo %in% c("multinomial", "multinominal")) {
     cat("\n")
     message("Tests performed for multinomial model.")
@@ -210,13 +229,27 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
 
     # Multicollinearity
     if (is.null(vif_result)) {
-      cat("Multicollinearity:\n\nVariance Inflation Factor cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
+      cat("Multicollinearity:\nVariance Inflation Factor cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
       cat("\n")
     } else {
       cat("Multicollinearity: Variance Inflation Factor:\n")
       print(vif_result)
       cat("\n")
     }
+
+    # Almacena los resultados:
+
+    resultados_list$model_type <- "Multinomial"
+    resultados_list$linearity_box_tidwell <- if(!is.null(resultado_box_tidwell)){resultado_box_tidwell$result} else{"Box-Tidwell Test cannot be done."}
+    resultados_list$multicollinearity_vif <- if(!is.null(vif_result)){vif_result} else{"Variance Inflation Factor Test cannot be done."}
+
+    # Mensaje en inglés
+    cat("The assumption tests have been completed and the results are available in a list.\n")
+    cat("Enjoy it\n")
+
+    # Mensaje en español
+    cat("Las pruebas de supuestos han sido completadas y los resultados estan disponibles en una lista.\n")
+    cat("Disfrutalo\n\n")
 
   } else if (tipo_modelo %in% c("ordenada", "ordenado", "ordered", "ordinal")) {
     cat("\n")
@@ -231,7 +264,7 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
 
     # Multicollinearity
     if (is.null(vif_result)) {
-      cat("Multicollinearity:\n\nVariance Inflation Factor cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
+      cat("Multicollinearity:\nVariance Inflation Factor cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
       cat("\n")
     } else {
       cat("Multicollinearity: Variance Inflation Factor:\n")
@@ -239,16 +272,25 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
       cat("\n")
     }
 
+    resultados_list$model_type <- "Ordinal"
+    resultados_list$linearity_box_tidwell <- if(!is.null(prueba_brant())){prueba_brant()} else{"Brant Test cannot be done."}
+    resultados_list$multicollinearity_vif <- if(!is.null(vif_result)){vif_result} else{"Variance Inflation Factor Test cannot be done."}
+
+    # Mensaje en inglés
+    cat("The assumption tests have been completed and the results are available in a list.\n")
+    cat("Enjoy it\n")
+
+    # Mensaje en español
+    cat("Las pruebas de supuestos han sido completadas y los resultados estan disponibles en una lista.\n")
+    cat("Disfrutalo\n\n")
+
   } else {
-    stop("Invalid model type. It must be 'binary', 'multinomial', or 'ordinal'.")
+    stop("Invalid model type. It must be 'binary', 'multinomial', or 'ordinal'.\n")
     stop("Tipo de modelo no valido. Debe ser 'binario', 'multinomial' u 'ordenado'.")
   }
-  return_model <- logit_model
-  coef_length <- length(logit_model$coefficients)
-  if (coef_length > 5) {
-    return_model$coefficients <- return_model$coefficients[1:5]
-    cat("Number of coefficients:", coef_length,"but only the first 5 are shown for clarity.\n")
-  }
-  return(return_model)
+
+  cat("The list of results will be displayed below:\n")
+
+  return(resultados_list)
 }
 

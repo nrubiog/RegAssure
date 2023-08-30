@@ -55,15 +55,47 @@ check_lm_assumptions(lm_model)
 #>   p-value:  0.03427476 
 #>   W-statistic:  0.9279165 
 #> 
-#> Multicollinearity:
-#>  VIF:  1.766625 1.766625
+#> Multicollinearity: Variance Inflation Factor:
+#>       wt       hp 
+#> 1.766625 1.766625 
 #> 
-#> Call:
-#> lm(formula = mpg ~ wt + hp, data = mtcars)
+#> The assumption tests have been completed and the results are available in a list.
+#> Enjoy it
+#> Las pruebas de supuestos han sido completadas y los resultados estan disponibles en una lista.
+#> Disfrutalo
 #> 
-#> Coefficients:
-#> (Intercept)           wt           hp  
-#>    37.22727     -3.87783     -0.03177
+#> The list of results will be displayed below:
+#> $linearity
+#> [1] 1.075529e-16
+#> 
+#> $homoscedasticity
+#> 
+#>  studentized Breusch-Pagan test
+#> 
+#> data:  model
+#> BP = 0.88072, df = 2, p-value = 0.6438
+#> 
+#> 
+#> $independence
+#> 
+#>  Durbin-Watson test
+#> 
+#> data:  model
+#> DW = 1.3624, p-value = 0.04123
+#> alternative hypothesis: true autocorrelation is not 0
+#> 
+#> 
+#> $normality
+#> 
+#>  Shapiro-Wilk normality test
+#> 
+#> data:  model$residuals
+#> W = 0.92792, p-value = 0.03427
+#> 
+#> 
+#> $multicollinearity
+#>       wt       hp 
+#> 1.766625 1.766625
 ```
 
 ## Example: Logistic Regression
@@ -85,35 +117,58 @@ logit_model <- glm(Survived ~ Pclass + Sex, data = titanic, family = "binomial")
 
 # Check assumptions for binary logistic regression
 check_logit(logit_model, data = titanic, tipo_modelo = "binario", vars_numericas = "Pclass", y = "Survived")
+#> logit_model has no missing values.
 #> Tests performed for binary/binomial model.
 #> 
-#> Linearity: Box Tidwell test:
-#>  MLE of lambda Score Statistic (t) Pr(>|t|)
-#>       1.435966           -1.222135 0.221981
-#> 
-#> Classification Accuracy (ROC Curve):
-#> Setting levels: control = 0, case = 1
-#> Setting direction: controls < cases
-#> Area under the curve: 0.8453
+#> Multicollinearity:
+#> Variance Inflation Factor cannot be applied since the model contains fewer than 2 independent numeric variables.
 #> 
 #> Classification Accuracy (Confusion Matrix):
 #>         Predicciones
 #> Variable   0   1
 #>        0 468  81
 #>        1 109 233
-#> Multicollinearity: VIF:
-#>   Pclass      Sex 
-#> 1.085996 1.085996
 #> 
-#> Call:  glm(formula = Survived ~ Pclass + Sex, family = "binomial", data = titanic)
+#> Classification Accuracy (ROC Curve):
 #> 
-#> Coefficients:
-#> (Intercept)       Pclass      Sexmale  
-#>      3.2946      -0.9606      -2.6434  
+#> Call:
+#> roc.default(response = new_data[[y]], predictor = pred_logit,     smooth = TRUE, auc = TRUE, ci = TRUE, ret = TRUE)
 #> 
-#> Degrees of Freedom: 890 Total (i.e. Null);  888 Residual
-#> Null Deviance:       1187 
-#> Residual Deviance: 827.2     AIC: 833.2
+#> Data: pred_logit in 549 controls (new_data[[y]] 0) < 342 cases (new_data[[y]] 1).
+#> Smoothing: binormal 
+#> Area under the curve: 0.8453
+#> 95% CI: 0.8131-0.8732 (2000 stratified bootstrap replicates)
+#> 
+#> The assumption tests have been completed and the results are available in a list.
+#> Enjoy it
+#> Las pruebas de supuestos han sido completadas y los resultados estan disponibles en una lista.
+#> Disfrutalo
+#> 
+#> The list of results will be displayed below:
+#> $model_type
+#> [1] "binary/binomial"
+#> 
+#> $linearity_box_tidwell
+#> [1] "Box-Tidwell Test cannot be done."
+#> 
+#> $multicollinearity_vif
+#> [1] "Variance Inflation Factor Test cannot be done."
+#> 
+#> $confusion_matrix
+#>         Predicciones
+#> Variable   0   1
+#>        0 468  81
+#>        1 109 233
+#> 
+#> $roc_curve
+#> 
+#> Call:
+#> roc.default(response = new_data[[y]], predictor = pred_logit,     smooth = TRUE, auc = TRUE, ci = TRUE, ret = TRUE)
+#> 
+#> Data: pred_logit in 549 controls (new_data[[y]] 0) < 342 cases (new_data[[y]] 1).
+#> Smoothing: binormal 
+#> Area under the curve: 0.8453
+#> 95% CI: 0.8144-0.8732 (2000 stratified bootstrap replicates)
 ```
 
 ## Example: storing data

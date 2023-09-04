@@ -4,16 +4,34 @@
 \alias{check_lm_assumptions}
 \title{Check Linear Regression Model Assumptions}
 \usage{
-check_lm_assumptions(model, m = NULL)
+check_lm_assumptions(
+  model,
+  studentize = TRUE,
+  iterations = 1000,
+  exact = NULL,
+  simulate.p.value = FALSE,
+  B = 2000,
+  simulate = TRUE
+)
 }
 \arguments{
 \item{model}{Object of class 'lm'. The fitted linear regression model.}
 
-\item{m}{Number of digits to round the results to. Default is NULL.}
+\item{studentize}{Argument of bptest function. Default is TRUE.}
+
+\item{iterations}{Argument of dwtest function. Default is 1000.}
+
+\item{exact}{Argument of ks.test function. Default is NULL.}
+
+\item{simulate.p.value}{Argument of ks.test function. Default is FALSE.}
+
+\item{B}{Argument of ks.test function. Default is 2000.}
+
+\item{simulate}{Argument of durbinWatsonTest function. Default is TRUE.}
 }
 \value{
 A list containing the results of assumption checks.
 }
 \description{
-This function verifies assumptions for various linear regression models, including OLS, WLS, censored, and truncated models.
+This function verifies assumptions for various linear regression models, including OLS, WLS, censored, and trunmessageed models.
 }

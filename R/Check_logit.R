@@ -55,17 +55,16 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
         resultado_box_tidwell <- suppressWarnings(boxTidwell(formula_linealidad, numeric_vars))
       }, error = function(e) {
         if (grepl("the variables to be transformed must have only positive values", e$message)) {
-          cat("Linearity: Box Tidwell test cannot be applied.\n")
-          cat("Reason:", e$message, "\n\n")
+          warning("Linearity: Box Tidwell test cannot be applied.\nReason:", e$message, "\n\n")
         } else {
           resultado_box_tidwell <- NULL
         }
       })
     } else {
-      cat("Linearity: Box Tidwell test cannot be applied due to non-positive values or missing values in numeric variables.\n\n")
+      warning("Linearity: Box Tidwell test cannot be applied due to non-positive values or missing values in numeric variables.\n\n")
     }
   } else {
-    cat("Linearity: Box Tidwell test cannot be applied since numeric variables have not been specified.\n\n")
+    warning("Linearity: Box Tidwell test cannot be applied since numeric variables have not been specified.\n\n")
   }
 
   return(resultado_box_tidwell)
@@ -129,10 +128,10 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
         curva_roc <- suppressMessages(roc(new_data[[y]], pred_logit, smooth = TRUE, auc = TRUE, ci = TRUE, ret = TRUE))
       }, error = function(err1) {
         if (grepl("ROC curve not smoothable", err1$message)) {
-          cat("Warning: The curve cannot be smoothed with smooth = TRUE.\n")
-          cat("Trying with smooth = FALSE.\n")
+          warning("Warning: The curve cannot be smoothed with smooth = TRUE.\n")
+          warning("Trying with smooth = FALSE.\n")
         } else {
-          cat("\nFailed to calculate ROC curve with smooth = TRUE. Changing smooth to FALSE.\n")
+          warning("\nFailed to calculate ROC curve with smooth = TRUE. Changing smooth to FALSE.\n")
           # Intentar calcular con smooth = FALSE
           curva_roc <- try(suppressMessages(roc(new_data[[y]], pred_logit,
                                                 smooth = FALSE, auc = TRUE, ci = TRUE, ret = TRUE)), silent = TRUE)
@@ -164,132 +163,92 @@ check_logit <- function(logit_model, data, tipo_modelo, vars_numericas = NULL, y
   resultados_list <- list()
 
   if (tipo_modelo %in% c("binario", "binaria", "binomial")) {
-    message("Tests performed for binary/binomial model.")
-    cat("\n")
+    message("\nTests performed for binary/binomial model.\n")
+
+    resultados_list$model_type <- "binary/binomial"
 
     # Linearity
-    if (!is.null(vars_numericas) && !is.null(resultado_box_tidwell)) {
-    cat("Linearity: Box Tidwell test:\n")
-    print(resultado_box_tidwell$result)
-    cat("\n")
+    if (!is.null(vars_numericas) && !is.null(resultado_box_tidwell))
+      {
+    resultados_list$Linearity <- resultado_box_tidwell
+    } else {
+      warning("Box-Tidwell Test cannot be done.\n\n")
     }
 
     # Multicollinearity
     if (is.null(vif_result)) {
-      cat("Multicollinearity:\nVariance Inflation Factor cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
-      cat("\n")
+      warning("Variance Inflation Factor Test cannot be done.\n\n")
     } else {
-      cat("Multicollinearity: Variance Inflation Factor:\n")
-      print(vif_result)
-      cat("\n")
+      resultados_list$Multicollinearity <- vif_result
     }
 
     # Accuracy using Confusion Matrix
 
-    cat("Classification Accuracy (Confusion Matrix):\n")
     confusion_matrix <- matriz_confusion()
-    print(confusion_matrix)
-    cat("\n")
+    if(!is.null(confusion_matrix)){
+    resultados_list$Confusion <- confusion_matrix
+    } else {
+      warning("Confusion Matrix cannot be calculated.\n\n")
+    }
 
     # Accuracy using ROC Curve
-    if(!is.null(prueba_roc)){
-    cat("Classification Accuracy (ROC Curve):\n")
-    print(prueba_roc())} else{
-      cat("\nROC Curve cannot be calculated.\n")
+
+    if(!is.null(prueba_roc))
+      {
+    resultados_list$ROC <- prueba_roc()
+    } else {
+      warning("ROC Curve cannot be calculated.\n\n")
     }
-    cat("\n")
-
-    # Almacena los resultados:
-
-    resultados_list$model_type <- "binary/binomial"
-    resultados_list$linearity_box_tidwell <- if(!is.null(resultado_box_tidwell)){resultado_box_tidwell$result} else{"Box-Tidwell Test cannot be done."}
-    resultados_list$multicollinearity_vif <- if(!is.null(vif_result)){vif_result} else{"Variance Inflation Factor Test cannot be done."}
-    resultados_list$confusion_matrix <- if(!is.null(confusion_matrix)){confusion_matrix} else{"Confusion Matrix cannot be done."}
-    resultados_list$roc_curve <- if(!is.null(prueba_roc)){prueba_roc()} else{"ROC curve cannot be done."}
-
-    # Mensaje en inglés
-    cat("The assumption tests have been completed and the results are available in a list.\n")
-    cat("Enjoy it\n")
-
-    # Mensaje en español
-    cat("Las pruebas de supuestos han sido completadas y los resultados estan disponibles en una lista.\n")
-    cat("Disfrutalo\n\n")
 
   } else if (tipo_modelo %in% c("multinomial", "multinominal")) {
-    cat("\n")
-    message("Tests performed for multinomial model.")
-    cat("\n")
 
-    # Linearity
-    if (!is.null(vars_numericas) && !is.null(resultado_box_tidwell)) {
-      cat("Linearity: Box Tidwell test:\n")
-      print(resultado_box_tidwell$result)
-      cat("\n")
-    }
-
-    # Multicollinearity
-    if (is.null(vif_result)) {
-      cat("Multicollinearity:\nVariance Inflation Factor cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
-      cat("\n")
-    } else {
-      cat("Multicollinearity: Variance Inflation Factor:\n")
-      print(vif_result)
-      cat("\n")
-    }
-
-    # Almacena los resultados:
+    message("\nTests performed for multinomial model.\n")
 
     resultados_list$model_type <- "Multinomial"
-    resultados_list$linearity_box_tidwell <- if(!is.null(resultado_box_tidwell)){resultado_box_tidwell$result} else{"Box-Tidwell Test cannot be done."}
-    resultados_list$multicollinearity_vif <- if(!is.null(vif_result)){vif_result} else{"Variance Inflation Factor Test cannot be done."}
 
-    # Mensaje en inglés
-    cat("The assumption tests have been completed and the results are available in a list.\n")
-    cat("Enjoy it\n")
-
-    # Mensaje en español
-    cat("Las pruebas de supuestos han sido completadas y los resultados estan disponibles en una lista.\n")
-    cat("Disfrutalo\n\n")
-
-  } else if (tipo_modelo %in% c("ordenada", "ordenado", "ordered", "ordinal")) {
-    cat("\n")
-    message("Tests performed for ordinal model.")
-    cat("\n")
-
-    # Parallelism
-    cat("Parallelism: Brant test:\n")
-    cat("\n")
-    print(prueba_brant())
-    cat("\n")
+    # Linearity
+    if (!is.null(vars_numericas) && !is.null(resultado_box_tidwell))
+    {
+      resultados_list$Linearity <- resultado_box_tidwell
+    } else {
+      warning("Box-Tidwell Test cannot be done.\n\n")
+    }
 
     # Multicollinearity
     if (is.null(vif_result)) {
-      cat("Multicollinearity:\nVariance Inflation Factor cannot be applied since the model contains fewer than 2 independent numeric variables.\n")
-      cat("\n")
+      warning("Variance Inflation Factor Test cannot be done.\n\n")
     } else {
-      cat("Multicollinearity: Variance Inflation Factor:\n")
-      print(vif_result)
-      cat("\n")
+      resultados_list$Multicollinearity <- vif_result
     }
 
+  } else if (tipo_modelo %in% c("ordenada", "ordenado", "ordered", "ordinal")) {
+
+    message("\nTests performed for ordinal model.\n")
+
     resultados_list$model_type <- "Ordinal"
-    resultados_list$linearity_box_tidwell <- if(!is.null(prueba_brant())){prueba_brant()} else{"Brant Test cannot be done."}
-    resultados_list$multicollinearity_vif <- if(!is.null(vif_result)){vif_result} else{"Variance Inflation Factor Test cannot be done."}
 
-    # Mensaje en inglés
-    cat("The assumption tests have been completed and the results are available in a list.\n")
-    cat("Enjoy it\n")
+    # Parallelism
 
-    # Mensaje en español
-    cat("Las pruebas de supuestos han sido completadas y los resultados estan disponibles en una lista.\n")
-    cat("Disfrutalo\n\n")
+    if(!is.null(prueba_brant())){
+      prueba_brant()
+    } else {
+        warning("Brant Test cannot be calculated.\n\n")
+      }
+
+    # Multicollinearity
+    if (is.null(vif_result)) {
+      warning("Variance Inflation Factor Test cannot be done.\n\n")
+    } else {
+      resultados_list$Multicollinearity <- vif_result
+    }
 
   } else {
     stop("Invalid model type. It must be 'binary', 'multinomial', or 'ordinal'.\n")
     stop("Tipo de modelo no valido. Debe ser 'binario', 'multinomial' u 'ordenado'.")
   }
 
-  cat("The list of results will be displayed below:\n")
+  message("\nThe assumption tests have been completed and the results are available in a list. Enjoy it :)\n")
+  message("Las pruebas de supuestos han sido completadas y los resultados estan disponibles en una lista. Disfrutalo :)\n")
 
   return(resultados_list)
 }

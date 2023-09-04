@@ -40,35 +40,13 @@ lm_model <- lm(mpg ~ wt + hp, data = mtcars)
 
 # Check assumptions
 check_lm_assumptions(lm_model)
-#> Linearity:
-#>  Mean of residuals:  1.075529e-16 
 #> 
-#> Homoscedasticity:
-#>  p-value:  0.6438038 
-#> 
-#> Independence:
-#>  p-value:  0.0412251 
-#>  Durbin-Watson test statistic:  1.362399 
-#> 
-#> Normality:
-#>  Shapiro-Wilk test:
-#>   p-value:  0.03427476 
-#>   W-statistic:  0.9279165 
-#> 
-#> Multicollinearity: Variance Inflation Factor:
-#>       wt       hp 
-#> 1.766625 1.766625 
-#> 
-#> The assumption tests have been completed and the results are available in a list.
-#> Enjoy it
-#> Las pruebas de supuestos han sido completadas y los resultados estan disponibles en una lista.
-#> Disfrutalo
-#> 
-#> The list of results will be displayed below:
-#> $linearity
+#> The assumption tests have been completed and the results are available in a list. Enjoy it :)
+#> Las pruebas de supuestos han sido completadas y los resultados están disponibles en una lista. Disfrútalo :)
+#> $Linearity
 #> [1] 1.075529e-16
 #> 
-#> $homoscedasticity
+#> $Homoscedasticity
 #> 
 #>  studentized Breusch-Pagan test
 #> 
@@ -76,7 +54,7 @@ check_lm_assumptions(lm_model)
 #> BP = 0.88072, df = 2, p-value = 0.6438
 #> 
 #> 
-#> $independence
+#> $Independence
 #> 
 #>  Durbin-Watson test
 #> 
@@ -85,7 +63,7 @@ check_lm_assumptions(lm_model)
 #> alternative hypothesis: true autocorrelation is not 0
 #> 
 #> 
-#> $normality
+#> $Normality
 #> 
 #>  Shapiro-Wilk normality test
 #> 
@@ -93,7 +71,7 @@ check_lm_assumptions(lm_model)
 #> W = 0.92792, p-value = 0.03427
 #> 
 #> 
-#> $multicollinearity
+#> $Multicollinearity
 #>       wt       hp 
 #> 1.766625 1.766625
 ```
@@ -118,49 +96,23 @@ logit_model <- glm(Survived ~ Pclass + Sex, data = titanic, family = "binomial")
 # Check assumptions for binary logistic regression
 check_logit(logit_model, data = titanic, tipo_modelo = "binario", vars_numericas = "Pclass", y = "Survived")
 #> logit_model has no missing values.
+#> 
 #> Tests performed for binary/binomial model.
+#> Warning in check_logit(logit_model, data = titanic, tipo_modelo = "binario", : Box-Tidwell Test cannot be done.
+#> Warning in check_logit(logit_model, data = titanic, tipo_modelo = "binario", : Variance Inflation Factor Test cannot be done.
 #> 
-#> Multicollinearity:
-#> Variance Inflation Factor cannot be applied since the model contains fewer than 2 independent numeric variables.
-#> 
-#> Classification Accuracy (Confusion Matrix):
-#>         Predicciones
-#> Variable   0   1
-#>        0 468  81
-#>        1 109 233
-#> 
-#> Classification Accuracy (ROC Curve):
-#> 
-#> Call:
-#> roc.default(response = new_data[[y]], predictor = pred_logit,     smooth = TRUE, auc = TRUE, ci = TRUE, ret = TRUE)
-#> 
-#> Data: pred_logit in 549 controls (new_data[[y]] 0) < 342 cases (new_data[[y]] 1).
-#> Smoothing: binormal 
-#> Area under the curve: 0.8453
-#> 95% CI: 0.8131-0.8732 (2000 stratified bootstrap replicates)
-#> 
-#> The assumption tests have been completed and the results are available in a list.
-#> Enjoy it
-#> Las pruebas de supuestos han sido completadas y los resultados estan disponibles en una lista.
-#> Disfrutalo
-#> 
-#> The list of results will be displayed below:
+#> The assumption tests have been completed and the results are available in a list. Enjoy it :)
+#> Las pruebas de supuestos han sido completadas y los resultados están disponibles en una lista. Disfrútalo :)
 #> $model_type
 #> [1] "binary/binomial"
 #> 
-#> $linearity_box_tidwell
-#> [1] "Box-Tidwell Test cannot be done."
-#> 
-#> $multicollinearity_vif
-#> [1] "Variance Inflation Factor Test cannot be done."
-#> 
-#> $confusion_matrix
+#> $Confusion
 #>         Predicciones
 #> Variable   0   1
 #>        0 468  81
 #>        1 109 233
 #> 
-#> $roc_curve
+#> $ROC
 #> 
 #> Call:
 #> roc.default(response = new_data[[y]], predictor = pred_logit,     smooth = TRUE, auc = TRUE, ci = TRUE, ret = TRUE)
@@ -168,7 +120,7 @@ check_logit(logit_model, data = titanic, tipo_modelo = "binario", vars_numericas
 #> Data: pred_logit in 549 controls (new_data[[y]] 0) < 342 cases (new_data[[y]] 1).
 #> Smoothing: binormal 
 #> Area under the curve: 0.8453
-#> 95% CI: 0.8144-0.8732 (2000 stratified bootstrap replicates)
+#> 95% CI: 0.8115-0.8729 (2000 stratified bootstrap replicates)
 ```
 
 ## Example: storing data

@@ -46,6 +46,7 @@ lm_model <- lm(mpg ~ wt + hp, data = mtcars)
 
 # Check assumptions
 check_lm_assumptions(lm_model)
+
 ```
 
 ## Example: Logistic Regression

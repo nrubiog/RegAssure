@@ -1,10 +1,16 @@
 #' Check Linear Regression Model Assumptions
 #'
 #' @description
-#' This function verifies assumptions for various linear regression models, including OLS, WLS, censored, and truncated models.
+#' This function verifies assumptions for various linear regression models, including OLS, WLS, censored, and trunmessageed models.
 #'
 #' @param model Object of class 'lm'. The fitted linear regression model.
-#' @param m Number of digits to round the results to. Default is NULL.
+#' @param studentize Argument of bptest function. Default is TRUE.
+#' @param iterations Argument of dwtest function. Default is 1000.
+#' @param exact Argument of ks.test function. Default is NULL.
+#' @param simulate.p.value Argument of ks.test function. Default is FALSE.
+#' @param simulate Argument of durbinWatsonTest function. Default is TRUE.
+#' @param B Argument of ks.test function. Default is 2000.
+#'
 #'
 #' @return A list containing the results of assumption checks.
 #'
@@ -17,115 +23,88 @@
 #' @export
 
 
-check_lm_assumptions <- function(model, m = NULL){
-
-  m = m # m = Número de decimales para redondear
+check_lm_assumptions <- function(model, studentize = TRUE, iterations = 1000, exact = NULL,
+                                 simulate.p.value = FALSE, B = 2000, simulate = TRUE) {
 
   # Linearity
-  mean_residuals <- mean(model$residuals)
-  if (!is.null(m)) {
-    cat("Linearity:\n Mean of residuals: ", round(mean_residuals, m), "\n")
-  } else{
-    cat("Linearity:\n Mean of residuals: ", mean_residuals, "\n")
-  }
-  cat("\n")
+
+  linearity_result <- mean(model$residuals)
+
+  linearity_msg <- suppressMessages(message("Linearity: \nMean of residuals", linearity_result))
 
   # Homoscedasticity
-  bptest_result <- bptest(model)
-  if (!is.null(m)) {
-    cat("Homoscedasticity: Breusch-Pagan Test:\n p-value: ", round(bptest_result$p.value, m), "\n")
-  } else{
-    cat("Homoscedasticity:\n p-value: ", bptest_result$p.value, "\n")
-  }
-  cat("\n")
+
+
+    bptest_result <- bptest(model, studentize = studentize)
+
+    homoscedasticity_msg <- suppressMessages(message("Homocedasticity: \n
+                              Alternative hypothesis: heteroscedasticity exists.\n", bptest_result))
+
 
   # Independence
 
   if (!is.null(model$weights)) {
-    dwtest_result <- durbinWatsonTest(model)
-    if (!is.null(m)){
-      cat("Independence:\n Durbin-Watson test statistic: ", round(dwtest_result$dw, m), "\n")
-    } else {
-      cat("Independence:\n Durbin-Watson test statistic: ", dwtest_result$dw, "\n")
-    }
-  } else {
-    dwtest_result <- dwtest(model, alternative = "two.sided", iterations = 1000)
-    if (!is.null(m)) {
-      cat("Independence:\n p-value: ", round(dwtest_result$p.value, m),
-          "\n Durbin-Watson test statistic: ", round(dwtest_result$statistic, m), "\n")
-    } else {
-      cat("Independence:\n p-value: ", dwtest_result$p.value,
-          "\n Durbin-Watson test statistic: ", dwtest_result$statistic, "\n")
-    }
-  }
-  cat("\n")
+    dwtest_result <- (durbinWatsonTest(model, simulate = simulate))
 
-  # Normality
-
-  if (length(model$residuals) < 50) {
-    normality_result <- shapiro.test(model$residuals)
-    if (!is.null(m)) {
-      cat("Normality:\n Shapiro-Wilk test:\n  p-value: ", round(normality_result$p.value, m),
-          "\n  W-statistic: ", round(normality_result$statistic, m), "\n")
+    independence_msg <- suppressMessages(message("Independence:\n
+                            Durbin-Watson test: ", dwtest_result$alternative,"\n
+                            p-value: ",dwtest_result$simulate,
+                            "Statistic: ", dwtest_result$dw,"\n"))
     } else {
-      cat("Normality:\n Shapiro-Wilk test:\n  p-value: ", normality_result$p.value,
-          "\n  W-statistic: ", normality_result$statistic, "\n")
+    dwtest_result <- dwtest(model, alternative = "two.sided", iterations = iterations)
     }
-  } else {
-    normality_result <- ks.test(model$residuals, "pnorm", mean = mean(model$residuals), sd = sd(model$residuals))
-    if (!is.null(m)) {
-      cat("Normality:\n Kolmogorov-Smirnov test:\n  p-value: ", round(normality_result$p.value, m), "\n")
+
+    independence_msg <- suppressMessages(message("Independence:\n
+                            Durbin-Watson test: \n
+                            Alternative hypothesis: true autocorrelation is not 0.\n
+                            p-value: ",dwtest_result$p.value,
+                            "Statistic: ", dwtest_result$statistic,"\n"))
+
+  # Normalidad
+
+  if (length(model$residuals) < 3 || length(model$residuals) > 5000) {
+    normality_msg <- warning("Normality:\n sample size outside the range for normality tests.\n Please inspect residuals visually for normality.")
+
+    } else if (length(model$residuals) < 50 || anyDuplicated(model$residuals)) {
+      normality_result <- shapiro.test(model$residuals)
+
+    normality_msg <- suppressMessages(message(
+      "Normality: \n
+      Shapiro-Wilk test:
+      Alternative hypothesis: sample does not come from a normal distribution.
+      p-value: ", normality_result$p.value,
+      "W-statistic: ", normality_result$statistic))
     } else {
-      cat("Normality:\n Kolmogorov-Smirnov test:\n  p-value: ", normality_result$p.value, "\n")
-    }
-  }
-  if (anyDuplicated(model$residuals)) {
-    cat("Normality:\n Ties detected. Using Shapiro-Wilk test instead of Kolmogorov-Smirnov.\n")
-    normality_result <- shapiro.test(model$residuals)
-    if (!is.null(m)) {
-      cat("Normality:\n Shapiro-Wilk test:\n  p-value: ", round(normality_result$p.value, m),
-          "\n  W-statistic: ", round(normality_result$statistic, m), "\n")
-    } else {
-      cat("Normality:\n Shapiro-Wilk test:\n  p-value: ", normality_result$p.value,
-          "\n  W-statistic: ", normality_result$statistic, "\n")
-    }
-    if (length(model$residuals) < 3 || length(model$residuals) > 5000) {
-      cat("Normality:\n Sample size outside the range for normality tests.\n")
-      cat("  Please inspect residuals visually for normality.\n")
-    }
-  }
-  cat("\n")
+      normality_result <- ks.test(model$residuals, "pnorm", mean = mean(model$residuals), sd = sd(model$residuals), exact = exact, simulate.p.value = simulate.p.value, B = B)
+        }
+      normality_msg <- suppressMessages(message("Normality: Kolmogorov-Smirnov test:\n
+                           Alternative hypothesis: sample does not come from a normal distribution.\n",
+                           "p-value: ", normality_result$p.value))
 
-  # Multicollinearity
+  # Multicolinealidad
 
-  vif_result <- vif(model)
-  if (!is.null(m)) {
-    cat("Multicollinearity: Variance Inflation Factor:\n")
-        print(round(vif_result, m))
-  } else {
-    cat("Multicollinearity: Variance Inflation Factor:\n")
-        print(vif_result)
-  }
-  cat("\n")
+    vif_result <- vif(model)
 
-    # Crear una lista con los resultados de los tests
-    results_list <- list(
-      linearity = mean_residuals,
-      homoscedasticity = bptest_result,
-      independence = dwtest_result,
-      normality = normality_result,
-      multicollinearity = vif_result
+
+  multicollinearity_msg <- suppressMessages(
+    message("Multicollinearity: \n",
+    "Variance Inflation Factor: \n",
+    vif_result)
     )
 
-    # Mensaje en inglés
-    cat("The assumption tests have been completed and the results are available in a list.\n")
-    cat("Enjoy it\n")
+  # Lista simple
 
-    # Mensaje en español
-    cat("Las pruebas de supuestos han sido completadas y los resultados estan disponibles en una lista.\n")
-    cat("Disfrutalo\n\n")
+  concise_results_list <- list(
+    Linearity = linearity_result,
+    Homoscedasticity = bptest_result,
+    Independence = dwtest_result,
+    Normality = normality_result,
+    Multicollinearity = vif_result
+  )
 
-    cat("The list of results will be displayed below:\n")
+  message("\nThe assumption tests have been completed and the results are available in a list. Enjoy it :)\n")
+  message("Las pruebas de supuestos han sido completadas y los resultados estan disponibles en una lista. Disfrutalo :)\n")
 
-  return(results_list)
-}
+      return(concise_results_list)
+  }
+
